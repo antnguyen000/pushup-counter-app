@@ -6,6 +6,7 @@ from kivy.clock import Clock
 from kivy.graphics.texture import Texture
 
 import cv2
+import mediapipe as mp
 
 class CamApp(App):
 
@@ -24,7 +25,7 @@ class CamApp(App):
         ret, frame = self.capture.read()
         # cv2.imshow("CV2 Image", frame)
         # convert it to texture
-        buf1 = cv2.flip(frame, 0)
+        buf1 = cv2.flip(frame, -1)
         buf = buf1.tostring()
         texture1 = Texture.create(size=(frame.shape[1], frame.shape[0]), colorfmt='bgr') 
         #if working on RASPBERRY PI, use colorfmt='rgba' here instead, but stick with "bgr" in blit_buffer. 
