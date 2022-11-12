@@ -15,7 +15,7 @@ class CamApp(App):
         layout = BoxLayout()
         layout.add_widget(self.img1)
         #opencv2 stuffs
-        self.capture = cv2.VideoCapture(0)
+        self.capture = cv2.VideoCapture("test_vid.mp4")
         # cv2.namedWindow("CV2 Image")
         Clock.schedule_interval(self.update, 1.0/33.0)
         return layout
@@ -35,41 +35,40 @@ class CamApp(App):
 
 class openCVApp():
 
-    def detector_objectifier():
+    def pose_estimator(video_file):
+        # initialize Pose estimator
         mp_drawing = mp.solutions.drawing_utils
         mp_pose = mp.solutions.pose
 
-        pose = mp_pose.Pose(min_detection_confidence=.5, min_tracking_confidence=.5)
+        pose = mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
-        return mp_drawing, pose
-
-    def video_detection(video_file, mp_drawing, pose):
-        cap = cv2.VideoCapture(video_file)
-        
+        cap = cv2.VideoCapture(0)
         while cap.isOpened():
-            _, frame = cap.read()
-
-            # try:
-            #     RGB = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            # except:
-            #     break
-
-            results = pose.process(RGB)
-            print(results.pose_landmarks)
-
-            mp_drawing.draw_landmarks(frame, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
-
-            cv2.imshow("Output", frame)
-
-            if cv2.waitKey(1) == ord("q"):
+            # read frame from capture object
+            _, frame1 = cap.read()
+            try:
+            # convert the frame to RGB format
+                RGB = cv2.cvtColor(frame1, cv2.COLOR_BGR2RGB)
+            
+            # process the RGB frame to get the result
+                results = pose.process(RGB)
+                print(results.pose_landmarks)
+                mp_drawing.draw_landmarks(frame1, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+                # show the final output
+                cv2.imshow('Output', frame1)
+            except:
                 break
-
-            cap.release()
-            cv2.destroyAllWindows()
+            if cv2.waitKey(1) == ord('q'):
+                break
+        cap.release()
+        cv2.destroyAllWindows()
 
             
 
 
 if __name__ == '__main__':
-    CamApp().run()
-    cv2.destroyAllWindows()
+    # CamApp().run()
+    # cv2.destroyAllWindows()
+
+    
+    openCVApp.pose_estimator("test_vid.mp4")
