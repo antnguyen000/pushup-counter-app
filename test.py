@@ -6,16 +6,22 @@ from kivy.clock import Clock
 from kivy.graphics.texture import Texture
 
 import cv2
-import mediapipe as mp
+# import mediapipe as mp
 
 class CamApp(App):
 
     def build(self):
         self.img1=Image()
+        self.img1.allow_stretch=True
         layout = BoxLayout()
         layout.add_widget(self.img1)
         #opencv2 stuffs
-        self.capture = cv2.VideoCapture(0)
+        self.capture = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+        self.capture.set(cv2.CAP_PROP_FPS, 30.0)
+        self.capture.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc('m','j','p','g'))
+        self.capture.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc('M','J','P','G'))
+        self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+        self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
         # cv2.namedWindow("CV2 Image")
         Clock.schedule_interval(self.update, 1.0/33.0)
         return layout
