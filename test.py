@@ -33,6 +33,43 @@ class CamApp(App):
         # display image from the texture
         self.img1.texture = texture1
 
+class openCVApp():
+
+    def detector_objectifier():
+        mp_drawing = mp.solutions.drawing_utils
+        mp_pose = mp.solutions.pose
+
+        pose = mp_pose.Pose(min_detection_confidence=.5, min_tracking_confidence=.5)
+
+        return mp_drawing, pose
+
+    def video_detection(video_file, mp_drawing, pose):
+        cap = cv2.VideoCapture(video_file)
+        
+        while cap.isOpened():
+            _, frame = cap.read()
+
+            # try:
+            #     RGB = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            # except:
+            #     break
+
+            results = pose.process(RGB)
+            print(results.pose_landmarks)
+
+            mp_drawing.draw_landmarks(frame, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+
+            cv2.imshow("Output", frame)
+
+            if cv2.waitKey(1) == ord("q"):
+                break
+
+            cap.release()
+            cv2.destroyAllWindows()
+
+            
+
+
 if __name__ == '__main__':
     CamApp().run()
     cv2.destroyAllWindows()
