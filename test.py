@@ -1,6 +1,7 @@
 import PySimpleGUI as sg
 import cv2
 import numpy as np
+import mediapipe as mp
 
 def main():
 
@@ -44,6 +45,25 @@ def main():
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
 
+    mp_drawing = mp.solutions.drawing_utils
+    mp_pose = mp.solutions.pose
+
+    pose = mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
+
+    def calc_angle(a, b, c):
+        a = np.array(a)
+        b = np.array(b) # Mid point
+        c = np.array(c)
+
+        ba = a - b
+        bc = c - b
+
+        angle = np.degrees(np.arccos(np.dot(a-b, c-b) / (np.linalg.norm(a-b) * np.linalg.norm(c-b))))
+
+        if angle > 180:
+            angle = 360 - angle
+
+        return angle
 
     while True:
         event, values = window.read(timeout=20)
@@ -79,8 +99,51 @@ def main():
         if recording:
             ret, frame = cap.read()
             frame = cv2.flip(frame, 1)
-            imgbytes = cv2.imencode('.png', frame)[1].tobytes()  # ditto
-            window['image'].update(data=imgbytes)
+            try:
+                # convert the frame from BGR -> RGB format for mediapipe processing
+                frame.flags.writeable = False
+                image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+                # process the RGB frame to get detection model
+                results = pose.process(image)
+
+                # Convert image from RGB -> BGR
+                image.flags.writeable = True
+                image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+                
+                # Extracting specific landmarks for excercises
+                try:
+                    landmarks = results.pose_landmarks.landmark
+                    # Extracting specific joint coordinates from the array of landmarks -> mp_pose.PoseLandmark.{BODYPART}.value
+                    # Example to get x & y from left elbow -> [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x,landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
+
+                    # For front view pushups - main points: (LEFT_WRIST, LEFT_ELBOW, LEFT_SHOULDER) & (RIGHT_WRIST, RIGHT_ELBOW, RIGHT_SHOULDER)
+                    left_wrist = [landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].x,landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y]
+                    left_elbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x,landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
+                    left_shoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
+
+                    right_wrist = [landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].y]
+                    right_elbow = [landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].y]
+                    right_shoulder = [landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y]
+
+                    # Calculating angles
+                    left_angle = round(calc_angle(left_wrist, left_elbow, left_shoulder))
+                    right_angle = round(calc_angle(right_wrist, right_elbow, right_shoulder))
+
+                    # Putting text onto the camera
+                    cv2.putText(image, str(left_angle), tuple(np.multiply(left_elbow, [cap.get(cv2.CAP_PROP_FRAME_WIDTH), cap.get(cv2.CAP_PROP_FRAME_HEIGHT)]).astype(int)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
+                    cv2.putText(image, str(right_angle), tuple(np.multiply(right_elbow, [cap.get(cv2.CAP_PROP_FRAME_WIDTH) - 250, cap.get(cv2.CAP_PROP_FRAME_HEIGHT)]).astype(int)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
+                except:
+                    pass
+                
+                # Draw landmarks (joints and connections) onto the image
+                mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+
+                imgbytes = cv2.imencode('.png', image)[1].tobytes()  # ditto
+                window['image'].update(data=imgbytes)
+            except:
+                break
+
     window.close()
 
     # # ----------- Create the 3 layouts this Window will display -----------
