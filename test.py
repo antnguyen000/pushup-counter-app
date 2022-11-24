@@ -48,7 +48,7 @@ def main():
     while True:
         event, values = window.read(timeout=20)
         if event == 'Exit' or event == sg.WIN_CLOSED:
-            return
+            break
 
         elif event == 'Front Facing Camera' or event == 'Side Facing Camera':
             window[f'-COL{layout}-'].update(visible=False)
@@ -81,6 +81,7 @@ def main():
             frame = cv2.flip(frame, 1)
             imgbytes = cv2.imencode('.png', frame)[1].tobytes()  # ditto
             window['image'].update(data=imgbytes)
+    window.close()
 
     # # ----------- Create the 3 layouts this Window will display -----------
     # layout1 = [[sg.Text('This is layout 1 - It is all Checkboxes')],
