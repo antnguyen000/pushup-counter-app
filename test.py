@@ -107,12 +107,20 @@ def main():
                     landmarks = results.pose_landmarks.landmark
                     
                     # Runs the selected pushup type
-                    left_angle, right_angle, image = pushup_type.frontview_pushup(image, landmarks, mp_pose, cap)
+                    # left_angle, right_angle, image = pushup_type.frontview_pushup(image, landmarks, mp_pose, cap)
+                    elbow_angle, back_angle, image = pushup_type.sideview_pushup(image, landmarks, mp_pose, cap)
                     
-                    # Frontview pushup counter: Counts when elbow angle is below 90deg and above 170deg
-                    if pushup_position and left_angle <= 90 and right_angle <= 90:
+                    # FRONTVIEW pushup counter: Counts when left & right elbow angle is below 90deg and above 170deg
+                    # if pushup_position and left_angle <= 90 and right_angle <= 90:
+                    #     pushup_position = 0
+                    # elif not pushup_position and left_angle >= 170 and right_angle >= 170:
+                    #     pushup_position = 1
+                    #     pushup_count += 1
+
+                    # SIDEVIEW pushup counter: Counts when elbow angle is below 90deg and above 160deg while back is maintained at above 155deg
+                    if pushup_position and elbow_angle <= 90 and back_angle >= 155:
                         pushup_position = 0
-                    elif not pushup_position and left_angle >= 170 and right_angle >= 170:
+                    elif not pushup_position and elbow_angle >= 160 and back_angle >= 155:
                         pushup_position = 1
                         pushup_count += 1
 
