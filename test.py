@@ -52,6 +52,10 @@ def main():
 
     pose = mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
+    # Initializing pushup counter
+    pushup_count = 0
+    pushup_position = 1 # Assuming start position is down
+
     while True:
         event, values = window.read(timeout=20)
         if event == 'Exit' or event == sg.WIN_CLOSED:
@@ -104,6 +108,16 @@ def main():
                     
                     # Runs the selected pushup type
                     left_angle, right_angle, image = pushup_type.frontview_pushup(image, landmarks, mp_pose, cap)
+                    
+                    # Frontview pushup counter: Counts when elbow angle is below 90deg and above 170deg
+                    if pushup_position and left_angle <= 90 and right_angle <= 90:
+                        pushup_position = 0
+                    elif not pushup_position and left_angle >= 170 and right_angle >= 170:
+                        pushup_position = 1
+                        pushup_count += 1
+
+                    # Putting the pushup count on the image
+                    cv2.putText(image, str(pushup_count), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
                 except:
                     pass
                 
