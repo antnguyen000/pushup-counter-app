@@ -122,10 +122,14 @@ def main():
                         pushup_position = 0
                     elif not pushup_position and elbow_angle >= 160 and back_angle >= 155:
                         pushup_position = 1
-                        pushup_count += 1
-
+                        pushup_count += 1 
+                    
                     # Putting the pushup count on the image
                     cv2.putText(image, str(pushup_count), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
+                    if pushup_position:
+                        cv2.putText(image, "DOWN", (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) - 100), 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
+                    else:
+                        cv2.putText(image, "UP", (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) - 100), 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
                 except:
                     pass
                 
