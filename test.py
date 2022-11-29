@@ -2,6 +2,7 @@ import PySimpleGUI as sg
 import cv2
 import numpy as np
 import mediapipe as mp
+import time
 
 import pushup_type
 
@@ -50,11 +51,14 @@ def main():
     mp_drawing = mp.solutions.drawing_utils
     mp_pose = mp.solutions.pose
 
-    pose = mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
+    pose = mp_pose.Pose(model_complexity=0, min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
     # Initializing pushup counter
     pushup_count = 0
     pushup_position = 1 # Assuming start position is down
+
+    # Initializing Start countdown
+    start_pushup = False
 
     while True:
         event, values = window.read(timeout=20)
@@ -86,10 +90,29 @@ def main():
             window[f'-COL{layout}-'].update(visible=False)
             layout -= 1
             window[f'-COL{layout}-'].update(visible=True)
-
+                        
+            
         if recording:
             ret, frame = cap.read()
             frame = cv2.flip(frame, 1)
+
+            # Pushup countdown code
+            if not start_pushup:
+                # Record initial time step and countdown for 10 seconds
+                timestamp0 = time.time()
+                while time.time() - timestamp0 < 5:
+                    # Continue video feed capture
+                    ret, temp_frame = cap.read()
+                    temp_frame = cv2.flip(frame, 1)
+
+                    # Input
+                    cv2.putText(temp_frame, str(time.time()-timestamp0), (500, 500), cv2.FONT_HERSHEY_SIMPLEX, 1, (200, 0, 0), 2, cv2.LINE_AA)
+                
+                    imgbytes = cv2.imencode('.png', temp_frame)[1].tobytes()  # ditto
+                    window['image'].update(data=imgbytes)
+
+                start_pushup = True
+                
             try:
                 # convert the frame from BGR -> RGB format for mediapipe processing
                 frame.flags.writeable = False
@@ -107,22 +130,22 @@ def main():
                     landmarks = results.pose_landmarks.landmark
                     
                     # Runs the selected pushup type
-                    # left_angle, right_angle, image = pushup_type.frontview_pushup(image, landmarks, mp_pose, cap)
-                    elbow_angle, back_angle, image = pushup_type.sideview_pushup(image, landmarks, mp_pose, cap)
+                    left_angle, right_angle, image = pushup_type.frontview_pushup(image, landmarks, mp_pose, cap)
+                    # elbow_angle, back_angle, image = pushup_type.sideview_pushup(image, landmarks, mp_pose, cap)
                     
                     # FRONTVIEW pushup counter: Counts when left & right elbow angle is below 90deg and above 170deg
-                    # if pushup_position and left_angle <= 90 and right_angle <= 90:
-                    #     pushup_position = 0
-                    # elif not pushup_position and left_angle >= 170 and right_angle >= 170:
-                    #     pushup_position = 1
-                    #     pushup_count += 1
+                    if pushup_position and left_angle <= 90 and right_angle <= 90:
+                        pushup_position = 0
+                    elif not pushup_position and left_angle >= 170 and right_angle >= 170:
+                        pushup_position = 1
+                        pushup_count += 1
 
                     # SIDEVIEW pushup counter: Counts when elbow angle is below 90deg and above 160deg while back is maintained at above 155deg
-                    if pushup_position and elbow_angle <= 90 and back_angle >= 155:
-                        pushup_position = 0
-                    elif not pushup_position and elbow_angle >= 160 and back_angle >= 155:
-                        pushup_position = 1
-                        pushup_count += 1 
+                    # if pushup_position and elbow_angle <= 90 and back_angle >= 155:
+                    #     pushup_position = 0
+                    # elif not pushup_position and elbow_angle >= 160 and back_angle >= 155:
+                    #     pushup_position = 1
+                    #     pushup_count += 1 
                     
                     # Putting the pushup count on the image
                     cv2.putText(image, str(pushup_count), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
