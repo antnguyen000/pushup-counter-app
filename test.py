@@ -3,6 +3,8 @@ import cv2
 import numpy as np
 import mediapipe as mp
 
+import pushup_type
+
 def main():
 
     sg.theme('Black')
@@ -50,20 +52,10 @@ def main():
 
     pose = mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
-    def calc_angle(a, b, c):
-        a = np.array(a)
-        b = np.array(b) # Mid point
-        c = np.array(c)
-
-        ba = a - b
-        bc = c - b
-
-        angle = np.degrees(np.arccos(np.dot(a-b, c-b) / (np.linalg.norm(a-b) * np.linalg.norm(c-b))))
-
-        if angle > 180:
-            angle = 360 - angle
-
-        return angle
+    # Initializing pushup counter
+    pushup_count = 0
+    pushup_position = 1 # Assuming start position is down
+    pushup_type = None
 
     while True:
         event, values = window.read(timeout=20)
@@ -114,25 +106,37 @@ def main():
                 # Extracting specific landmarks for excercises
                 try:
                     landmarks = results.pose_landmarks.landmark
-                    # Extracting specific joint coordinates from the array of landmarks -> mp_pose.PoseLandmark.{BODYPART}.value
-                    # Example to get x & y from left elbow -> [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x,landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
+                    
+                    # Runs the selected pushup type       
+                    
+                    # Select Front View:
+                    if event == 'Front Facing Camera':
+                        pushup_type = "Front View"
+                        left_angle, right_angle, image = pushup_type.frontview_pushup(image, landmarks, mp_pose, cap)
+                    # FRONTVIEW pushup counter: Counts when left & right elbow angle is below 90deg and above 170deg
+                        if pushup_position and left_angle <= 90 and right_angle <= 90:
+                            pushup_position = 0
+                        elif not pushup_position and left_angle >= 170 and right_angle >= 170:
+                            pushup_position = 1
+                            pushup_count += 1
 
-                    # For front view pushups - main points: (LEFT_WRIST, LEFT_ELBOW, LEFT_SHOULDER) & (RIGHT_WRIST, RIGHT_ELBOW, RIGHT_SHOULDER)
-                    left_wrist = [landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].x,landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y]
-                    left_elbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x,landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
-                    left_shoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
-
-                    right_wrist = [landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].y]
-                    right_elbow = [landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].y]
-                    right_shoulder = [landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].x,landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y]
-
-                    # Calculating angles
-                    left_angle = round(calc_angle(left_wrist, left_elbow, left_shoulder))
-                    right_angle = round(calc_angle(right_wrist, right_elbow, right_shoulder))
-
-                    # Putting text onto the camera
-                    cv2.putText(image, str(left_angle), tuple(np.multiply(left_elbow, [cap.get(cv2.CAP_PROP_FRAME_WIDTH), cap.get(cv2.CAP_PROP_FRAME_HEIGHT)]).astype(int)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
-                    cv2.putText(image, str(right_angle), tuple(np.multiply(right_elbow, [cap.get(cv2.CAP_PROP_FRAME_WIDTH) - 250, cap.get(cv2.CAP_PROP_FRAME_HEIGHT)]).astype(int)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
+                    # SIDEVIEW pushup counter: Counts when elbow angle is below 90deg and above 160deg while back is maintained at above 155deg
+                    if event == 'Side Facing Camera':
+                        pushup_type = "Side View"
+                        elbow_angle, back_angle, image = pushup_type.sideview_pushup(image, landmarks, mp_pose, cap)
+                        if pushup_position and elbow_angle <= 90 and back_angle >= 155:
+                            pushup_position = 0
+                        elif not pushup_position and elbow_angle >= 160 and back_angle >= 155:
+                            pushup_position = 1
+                            pushup_count += 1 
+                    
+                    # Putting the pushup count on the image
+                    cv2.putText(image, pushup_type, (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)/2 - 50), 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
+                    cv2.putText(image, str(pushup_count), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
+                    if pushup_position:
+                        cv2.putText(image, "DOWN", (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) - 100), 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
+                    else:
+                        cv2.putText(image, "UP", (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) - 100), 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
                 except:
                     pass
                 
