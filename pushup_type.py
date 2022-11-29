@@ -22,8 +22,8 @@ def frontview_pushup(image, landmarks, mp_pose, cap):
     right_angle = round(calc_angle(right_shoulder, right_elbow, right_wrist))
 
     # Putting text onto the camera
-    cv2.putText(image, str(left_angle), tuple(np.multiply(left_elbow, [cap.get(cv2.CAP_PROP_FRAME_WIDTH), cap.get(cv2.CAP_PROP_FRAME_HEIGHT)]).astype(int)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
-    cv2.putText(image, str(right_angle), tuple(np.multiply(right_elbow, [cap.get(cv2.CAP_PROP_FRAME_WIDTH) - 250, cap.get(cv2.CAP_PROP_FRAME_HEIGHT)]).astype(int)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
+    cv2.putText(image, str(left_angle), tuple(np.multiply(left_elbow, [cap.get(cv2.CAP_PROP_FRAME_WIDTH), cap.get(cv2.CAP_PROP_FRAME_HEIGHT)]).astype(int)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+    cv2.putText(image, str(right_angle), tuple(np.multiply(right_elbow, [cap.get(cv2.CAP_PROP_FRAME_WIDTH) - 250, cap.get(cv2.CAP_PROP_FRAME_HEIGHT)]).astype(int)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
 
     return left_angle, right_angle, image
 
@@ -48,8 +48,8 @@ def sideview_pushup(image, landmarks, mp_pose, cap):
     back_angle = round(calc_angle(left_shoulder, left_hip, left_ankle))
 
     # Putting text onto the camera - Places text on right elbow & hip due to camera flip
-    cv2.putText(image, str(elbow_angle), tuple(np.multiply(right_elbow, [cap.get(cv2.CAP_PROP_FRAME_WIDTH), cap.get(cv2.CAP_PROP_FRAME_HEIGHT)]).astype(int)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
-    cv2.putText(image, str(back_angle), tuple(np.multiply(right_hip, [cap.get(cv2.CAP_PROP_FRAME_WIDTH), cap.get(cv2.CAP_PROP_FRAME_HEIGHT) + 200]).astype(int)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
+    cv2.putText(image, str(elbow_angle), tuple(np.multiply(right_elbow, [cap.get(cv2.CAP_PROP_FRAME_WIDTH), cap.get(cv2.CAP_PROP_FRAME_HEIGHT)]).astype(int)), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
+    cv2.putText(image, str(back_angle), tuple(np.multiply(right_hip, [cap.get(cv2.CAP_PROP_FRAME_WIDTH), cap.get(cv2.CAP_PROP_FRAME_HEIGHT) + 200]).astype(int)), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
 
     return elbow_angle, back_angle, image
 
