@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import mediapipe as mp
 import time, math
+import pyttsx3
 
 import pushup_type
 
@@ -55,9 +56,15 @@ def main():
     start_countdown = False
 
     while True:
+        tts = pyttsx3.init()
         event, values = window.read(timeout=20)
         if event == 'Exit' or event == sg.WIN_CLOSED:
             break
+
+        if event == 'Front Facing Camera':
+            pushupView = 'Front View'
+        if event == 'Side Facing Camera':
+            pushupView = 'Side View'
 
         elif event == 'Front Facing Camera' or event == 'Side Facing Camera':
             window[f'-COL{layout}-'].update(visible=False)
@@ -134,25 +141,32 @@ def main():
                     try:
                         landmarks = results.pose_landmarks.landmark
                         
+                        if pushupView == 'Front View':
                         # Runs the selected pushup type
-                        left_angle, right_angle, image = pushup_type.frontview_pushup(image, landmarks, mp_pose, cap)
-                        # elbow_angle, back_angle, image = pushup_type.sideview_pushup(image, landmarks, mp_pose, cap)
+                            left_angle, right_angle, image = pushup_type.frontview_pushup(image, landmarks, mp_pose, cap)
                         
                         # FRONTVIEW pushup counter: Counts when left & right elbow angle is below 90deg and above 170deg
-                        if pushup_position and left_angle <= 90 and right_angle <= 90:
-                            pushup_position = 0
-                        elif not pushup_position and left_angle >= 170 and right_angle >= 170:
-                            pushup_position = 1
-                            pushup_count += 1
+                            if pushup_position and left_angle <= 90 and right_angle <= 90:
+                                pushup_position = 0
+                            elif not pushup_position and left_angle >= 170 and right_angle >= 170:
+                                pushup_position = 1
+                                pushup_count += 1
+                                tts.say(str(pushup_count))
+                                tts.runAndWait()
 
+                        if pushupView == 'Side View':
+                            elbow_angle, back_angle, image = pushup_type.sideview_pushup(image, landmarks, mp_pose, cap)
                         # SIDEVIEW pushup counter: Counts when elbow angle is below 90deg and above 160deg while back is maintained at above 155deg
-                        # if pushup_position and elbow_angle <= 90 and back_angle >= 155:
-                        #     pushup_position = 0
-                        # elif not pushup_position and elbow_angle >= 160 and back_angle >= 155:
-                        #     pushup_position = 1
-                        #     pushup_count += 1 
+                            if pushup_position and elbow_angle <= 90 and back_angle >= 155:
+                                pushup_position = 0
+                            elif not pushup_position and elbow_angle >= 160 and back_angle >= 155:
+                                pushup_position = 1
+                                pushup_count += 1 
+                                tts.say(str(pushup_count))
+                                tts.runAndWait()
                         
                         # Putting the pushup count on the image
+                        cv2.putText(image, pushupView, (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) - 700), 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
                         cv2.putText(image, str(pushup_count), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
                         if pushup_position:
                             cv2.putText(image, "DOWN", (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) - 100), 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
