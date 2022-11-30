@@ -165,10 +165,10 @@ def main():
 
                         if pushupView == 'Side View':
                             elbow_angle, back_angle, image = pushup_type.sideview_pushup(image, landmarks, mp_pose, cap)
-                        # SIDEVIEW pushup counter: Counts when elbow angle is below 90deg and above 160deg while back is maintained at above 155deg
-                            if pushup_position and elbow_angle <= 90 and back_angle >= 155:
+                        # SIDEVIEW pushup counter: Counts when elbow angle is below 90deg and above 160deg while back is maintained at above 150deg
+                            if pushup_position and elbow_angle <= 90 and back_angle >= 150:
                                 pushup_position = 0
-                            elif not pushup_position and elbow_angle >= 160 and back_angle >= 155:
+                            elif not pushup_position and elbow_angle >= 160 and back_angle >= 150:
                                 pushup_position = 1
                                 pushup_count += 1 
                                 tts.say(str(pushup_count))
