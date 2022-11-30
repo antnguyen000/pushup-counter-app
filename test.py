@@ -124,7 +124,11 @@ def main():
 
                 cv2.putText(frame, "Get in Position!", (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)/8), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)/4)), cv2.FONT_HERSHEY_SIMPLEX, 4, (255, 255, 255), 5, cv2.LINE_AA)
                 cv2.putText(frame, str(math.ceil(10 - (curr-timestamp0))), (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)/2 - 100), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)/2 + 150)), cv2.FONT_HERSHEY_SIMPLEX, 10, (255, 255, 255), 5, cv2.LINE_AA)
-            
+
+                if pushupView == "Side View":
+                    cv2.putText(frame, "Feet", (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)/5 - 150), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)/2)), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), 2, cv2.LINE_AA)
+                    cv2.putText(frame, "Head", (int(4*cap.get(cv2.CAP_PROP_FRAME_WIDTH)/5), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)/2)), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), 2, cv2.LINE_AA)
+
                 imgbytes = cv2.imencode('.png', frame)[1].tobytes()  # ditto
                 window['image'].update(data=imgbytes)
 
