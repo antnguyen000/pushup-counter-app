@@ -8,18 +8,19 @@ import pushup_type
 
 def main():
 
-    # sg.theme('Black')
+    sg.theme('DarkTeal')
 
     # define the window layout
-    layout1 = [[sg.Text('Pushup Analyzer'),
-                sg.Text('By: The Probers'),
-                sg.Button('Start'), sg.Button('Exit')]]
+    layout1 = [[sg.Image(filename='large_logo.png')],
+                [sg.Column([
+                [sg.Text('By: The Probers'),
+                sg.Button('Start'), sg.Button('Exit')]], justification='center')]]
 
-    layout2 = [[sg.Text('Pushup Analyzer'),
-                sg.Text('By: The Probers'),
-                sg.Button('Return')],
-                [sg.Button('Front Facing Camera'),
-                sg.Button('Side Facing Camera')]]
+    layout2 = [[sg.Image(filename='logo.png')],
+                [sg.Column([[sg.Text('By: The Probers'),
+                sg.Button('Return'),
+                sg.Button('Front Facing Camera'),
+                sg.Button('Side Facing Camera')]], justification='center')]]
 
     layout3 = [[sg.Text('Pushup Analyzer'),
                 sg.Text('By: The Probers'),
@@ -27,7 +28,7 @@ def main():
             [sg.Image(filename='', key='image')]]
     
             
-    layout = [[sg.Column(layout1, key='-COL1-'), sg.Column(layout2, visible=False, key='-COL2-'), sg.Column(layout3, visible=False, key='-COL3-')]]
+    layout = [[sg.Column(layout1, key='-COL1-', justification='center'), sg.Column(layout2, visible=False, key='-COL2-', justification='left'), sg.Column(layout3, visible=False, key='-COL3-')]]
 
     # create the window and show it without the plot
     window = sg.Window('OpenCV Pushup Tracker',
