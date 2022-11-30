@@ -111,7 +111,7 @@ def main():
                 if res > 10:
                     start_pushup = True
                 
-                cv2.putText(frame, str(math.ceil(10 - (curr-timestamp0))), (500, 500), cv2.FONT_HERSHEY_SIMPLEX, 1, (200, 0, 0), 2, cv2.LINE_AA)
+                cv2.putText(frame, str(math.ceil(10 - (curr-timestamp0))), (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)/2 - 100), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)/2 + 100)), cv2.FONT_HERSHEY_SIMPLEX, 10, (255, 255, 255), 5, cv2.LINE_AA)
             
                 imgbytes = cv2.imencode('.png', frame)[1].tobytes()  # ditto
                 window['image'].update(data=imgbytes)
