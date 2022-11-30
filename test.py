@@ -162,7 +162,10 @@ def main():
                         pass
                     
                     # Draw landmarks (joints and connections) onto the image
-                    mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+                    mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
+                                                mp_drawing.DrawingSpec(color=(0, 0, 0), thickness=1, circle_radius=0),
+                                                mp_drawing.DrawingSpec(color=(255, 255, 255), thickness=3, circle_radius=2)
+                                                )
 
                     imgbytes = cv2.imencode('.png', image)[1].tobytes()  # ditto
                     window['image'].update(data=imgbytes)
