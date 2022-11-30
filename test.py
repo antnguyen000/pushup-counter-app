@@ -111,7 +111,8 @@ def main():
                 if res > 10:
                     start_pushup = True
                 
-                cv2.putText(frame, str(math.ceil(10 - (curr-timestamp0))), (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)/2 - 100), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)/2 + 100)), cv2.FONT_HERSHEY_SIMPLEX, 10, (255, 255, 255), 5, cv2.LINE_AA)
+                cv2.putText(frame, "Get in Position!", (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)/8), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)/4)), cv2.FONT_HERSHEY_SIMPLEX, 4, (255, 255, 255), 5, cv2.LINE_AA)
+                cv2.putText(frame, str(math.ceil(10 - (curr-timestamp0))), (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)/2 - 100), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)/2 + 150)), cv2.FONT_HERSHEY_SIMPLEX, 10, (255, 255, 255), 5, cv2.LINE_AA)
             
                 imgbytes = cv2.imencode('.png', frame)[1].tobytes()  # ditto
                 window['image'].update(data=imgbytes)
