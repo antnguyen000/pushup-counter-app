@@ -8,7 +8,7 @@ import pushup_type
 
 def main():
 
-    sg.theme('Black')
+    # sg.theme('Black')
 
     # define the window layout
     layout1 = [[sg.Text('Pushup Analyzer'),
@@ -48,7 +48,7 @@ def main():
 
     # Initializing pushup counter
     pushup_count = 0
-    pushup_position = 1 # Assuming start position is down
+    pushup_position = 1 # Assuming start position is up
 
     # Initializing Start countdown
     start_pushup = False
