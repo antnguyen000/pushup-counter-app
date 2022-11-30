@@ -2,12 +2,13 @@ import PySimpleGUI as sg
 import cv2
 import numpy as np
 import mediapipe as mp
+import time, math
 
 import pushup_type
 
 def main():
 
-    sg.theme('Black')
+    # sg.theme('Black')
 
     # define the window layout
     layout1 = [[sg.Text('Pushup Analyzer'),
@@ -39,23 +40,19 @@ def main():
     recording = False
 
     layout = 1
-    
-    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-    cap.set(cv2.CAP_PROP_FPS, 30.0)
-    cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc('m','j','p','g'))
-    cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc('M','J','P','G'))
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
 
     mp_drawing = mp.solutions.drawing_utils
     mp_pose = mp.solutions.pose
 
-    pose = mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
+    pose = mp_pose.Pose(model_complexity=0, min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
     # Initializing pushup counter
     pushup_count = 0
-    pushup_position = 1 # Assuming start position is down
-    pushup_type = None
+    pushup_position = 1 # Assuming start position is up
+
+    # Initializing Start countdown
+    start_pushup = False
+    start_countdown = False
 
     while True:
         event, values = window.read(timeout=20)
@@ -67,6 +64,14 @@ def main():
             layout += 1
             window[f'-COL{layout}-'].update(visible=True)
             recording = True
+            cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+            cap.set(cv2.CAP_PROP_FPS, 30.0)
+            cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc('m','j','p','g'))
+            cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc('M','J','P','G'))
+            cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+            cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+            start_pushup = False
+            start_countdown = False
 
         elif event == 'Start':
             window[f'-COL{layout}-'].update(visible=False)
@@ -79,6 +84,7 @@ def main():
             imgbytes = cv2.imencode('.png', img)[1].tobytes()
             window['image'].update(data=imgbytes)
             recording = False
+            cap = None
             window[f'-COL{layout}-'].update(visible=False)
             layout -= 1
             window[f'-COL{layout}-'].update(visible=True)
@@ -87,66 +93,81 @@ def main():
             window[f'-COL{layout}-'].update(visible=False)
             layout -= 1
             window[f'-COL{layout}-'].update(visible=True)
-
+                        
+            
         if recording:
             ret, frame = cap.read()
             frame = cv2.flip(frame, 1)
-            try:
-                # convert the frame from BGR -> RGB format for mediapipe processing
-                frame.flags.writeable = False
-                image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-                # process the RGB frame to get detection model
-                results = pose.process(image)
+            if not start_countdown:
+                # Record initial time step and countdown for 10 seconds
+                timestamp0 = time.time()
+                start_countdown = True
 
-                # Convert image from RGB -> BGR
-                image.flags.writeable = True
-                image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+            # Pushup countdown code
+            if not start_pushup:
+                curr = time.time()
+                res = curr - timestamp0
+                if res > 10:
+                    start_pushup = True
                 
-                # Extracting specific landmarks for excercises
+                cv2.putText(frame, str(math.ceil(10 - (curr-timestamp0))), (500, 500), cv2.FONT_HERSHEY_SIMPLEX, 1, (200, 0, 0), 2, cv2.LINE_AA)
+            
+                imgbytes = cv2.imencode('.png', frame)[1].tobytes()  # ditto
+                window['image'].update(data=imgbytes)
+
+                
+            else:  
                 try:
-                    landmarks = results.pose_landmarks.landmark
+                    # convert the frame from BGR -> RGB format for mediapipe processing
+                    frame.flags.writeable = False
+                    image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+                    # process the RGB frame to get detection model
+                    results = pose.process(image)
+
+                    # Convert image from RGB -> BGR
+                    image.flags.writeable = True
+                    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
                     
-                    # Runs the selected pushup type       
-                    
-                    # Select Front View:
-                    if event == 'Front Facing Camera':
-                        pushup_type = "Front View"
+                    # Extracting specific landmarks for excercises
+                    try:
+                        landmarks = results.pose_landmarks.landmark
+                        
+                        # Runs the selected pushup type
                         left_angle, right_angle, image = pushup_type.frontview_pushup(image, landmarks, mp_pose, cap)
-                    # FRONTVIEW pushup counter: Counts when left & right elbow angle is below 90deg and above 170deg
+                        # elbow_angle, back_angle, image = pushup_type.sideview_pushup(image, landmarks, mp_pose, cap)
+                        
+                        # FRONTVIEW pushup counter: Counts when left & right elbow angle is below 90deg and above 170deg
                         if pushup_position and left_angle <= 90 and right_angle <= 90:
                             pushup_position = 0
                         elif not pushup_position and left_angle >= 170 and right_angle >= 170:
                             pushup_position = 1
                             pushup_count += 1
 
-                    # SIDEVIEW pushup counter: Counts when elbow angle is below 90deg and above 160deg while back is maintained at above 155deg
-                    if event == 'Side Facing Camera':
-                        pushup_type = "Side View"
-                        elbow_angle, back_angle, image = pushup_type.sideview_pushup(image, landmarks, mp_pose, cap)
-                        if pushup_position and elbow_angle <= 90 and back_angle >= 155:
-                            pushup_position = 0
-                        elif not pushup_position and elbow_angle >= 160 and back_angle >= 155:
-                            pushup_position = 1
-                            pushup_count += 1 
+                        # SIDEVIEW pushup counter: Counts when elbow angle is below 90deg and above 160deg while back is maintained at above 155deg
+                        # if pushup_position and elbow_angle <= 90 and back_angle >= 155:
+                        #     pushup_position = 0
+                        # elif not pushup_position and elbow_angle >= 160 and back_angle >= 155:
+                        #     pushup_position = 1
+                        #     pushup_count += 1 
+                        
+                        # Putting the pushup count on the image
+                        cv2.putText(image, str(pushup_count), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
+                        if pushup_position:
+                            cv2.putText(image, "DOWN", (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) - 100), 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
+                        else:
+                            cv2.putText(image, "UP", (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) - 100), 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
+                    except:
+                        pass
                     
-                    # Putting the pushup count on the image
-                    cv2.putText(image, pushup_type, (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)/2 - 50), 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
-                    cv2.putText(image, str(pushup_count), (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
-                    if pushup_position:
-                        cv2.putText(image, "DOWN", (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) - 100), 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
-                    else:
-                        cv2.putText(image, "UP", (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) - 100), 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
-                except:
-                    pass
-                
-                # Draw landmarks (joints and connections) onto the image
-                mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+                    # Draw landmarks (joints and connections) onto the image
+                    mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
 
-                imgbytes = cv2.imencode('.png', image)[1].tobytes()  # ditto
-                window['image'].update(data=imgbytes)
-            except:
-                break
+                    imgbytes = cv2.imencode('.png', image)[1].tobytes()  # ditto
+                    window['image'].update(data=imgbytes)
+                except:
+                    break
 
     window.close()
 
