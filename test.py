@@ -117,9 +117,18 @@ def main():
                 res = curr - timestamp0
                 if res > 10:
                     start_pushup = True
-                
-                cv2.putText(frame, str(math.ceil(10 - (curr-timestamp0))), (500, 500), cv2.FONT_HERSHEY_SIMPLEX, 1, (200, 0, 0), 2, cv2.LINE_AA)
-            
+
+                # Reducing frame opacity    
+                frame = np.array(frame, dtype=np.float)
+                frame /= 2.0
+
+                cv2.putText(frame, "Get in Position!", (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)/8), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)/4)), cv2.FONT_HERSHEY_SIMPLEX, 4, (255, 255, 255), 5, cv2.LINE_AA)
+                cv2.putText(frame, str(math.ceil(10 - (curr-timestamp0))), (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)/2 - 100), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)/2 + 150)), cv2.FONT_HERSHEY_SIMPLEX, 10, (255, 255, 255), 5, cv2.LINE_AA)
+
+                if pushupView == "Side View":
+                    cv2.putText(frame, "Feet", (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)/5 - 150), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)/2)), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), 2, cv2.LINE_AA)
+                    cv2.putText(frame, "Head", (int(4*cap.get(cv2.CAP_PROP_FRAME_WIDTH)/5), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)/2)), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 255, 255), 2, cv2.LINE_AA)
+
                 imgbytes = cv2.imencode('.png', frame)[1].tobytes()  # ditto
                 window['image'].update(data=imgbytes)
 
@@ -156,10 +165,10 @@ def main():
 
                         if pushupView == 'Side View':
                             elbow_angle, back_angle, image = pushup_type.sideview_pushup(image, landmarks, mp_pose, cap)
-                        # SIDEVIEW pushup counter: Counts when elbow angle is below 90deg and above 160deg while back is maintained at above 155deg
-                            if pushup_position and elbow_angle <= 90 and back_angle >= 155:
+                        # SIDEVIEW pushup counter: Counts when elbow angle is below 90deg and above 160deg while back is maintained at above 150deg
+                            if pushup_position and elbow_angle <= 90 and back_angle >= 150:
                                 pushup_position = 0
-                            elif not pushup_position and elbow_angle >= 160 and back_angle >= 155:
+                            elif not pushup_position and elbow_angle >= 160 and back_angle >= 150:
                                 pushup_position = 1
                                 pushup_count += 1 
                                 tts.say(str(pushup_count))
@@ -176,7 +185,10 @@ def main():
                         pass
                     
                     # Draw landmarks (joints and connections) onto the image
-                    mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+                    mp_drawing.draw_landmarks(image, results.pose_landmarks, mp_pose.POSE_CONNECTIONS,
+                                                mp_drawing.DrawingSpec(color=(0, 0, 0), thickness=1, circle_radius=0),
+                                                mp_drawing.DrawingSpec(color=(255, 255, 255), thickness=3, circle_radius=2)
+                                                )
 
                     imgbytes = cv2.imencode('.png', image)[1].tobytes()  # ditto
                     window['image'].update(data=imgbytes)
