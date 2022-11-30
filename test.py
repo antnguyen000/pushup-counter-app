@@ -9,22 +9,22 @@ import pushup_type
 
 def main():
 
-    # sg.theme('Black')
+    sg.theme('DarkTeal')
 
     # define the window layout
-    layout1 = [[sg.Text('Pushup Analyzer'),
-                sg.Text('By: The Probers'),
-                sg.Button('Start'), sg.Button('Exit')]]
+    layout1 = [[sg.Column([
+                [sg.Image(filename='large_logo.png')]], justification='center')],
+                [sg.Column([
+                [sg.Button('Start'), sg.Button('Exit')]], justification='center')]]
 
-    layout2 = [[sg.Text('Pushup Analyzer'),
-                sg.Text('By: The Probers'),
-                sg.Button('Return')],
-                [sg.Button('Front Facing Camera'),
-                sg.Button('Side Facing Camera')]]
+    layout2 = [[sg.Column([
+                [sg.Image(filename='large_logo.png')]], justification='center')],
+                [sg.Column([[sg.Text('Select Camera View:'),
+                sg.Button('Front Facing Camera'),
+                sg.Button('Side Facing Camera')],[
+                sg.Column([[sg.Button('Return')]], justification='center')]], justification='center')]]
 
-    layout3 = [[sg.Text('Pushup Analyzer'),
-                sg.Text('By: The Probers'),
-                sg.Button('Go Back')],
+    layout3 = [[sg.Button('Go Back')],
             [sg.Image(filename='', key='image')]]
     
             
@@ -32,7 +32,7 @@ def main():
 
     # create the window and show it without the plot
     window = sg.Window('OpenCV Pushup Tracker',
-                       layout, finalize=True)
+                       layout, finalize=True, element_justification='center')
 
     window.maximize()
 
