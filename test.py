@@ -110,7 +110,11 @@ def main():
                 res = curr - timestamp0
                 if res > 10:
                     start_pushup = True
-                
+
+                # Reducing frame opacity    
+                frame = np.array(frame, dtype=np.float)
+                frame /= 2.0
+
                 cv2.putText(frame, "Get in Position!", (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)/8), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)/4)), cv2.FONT_HERSHEY_SIMPLEX, 4, (255, 255, 255), 5, cv2.LINE_AA)
                 cv2.putText(frame, str(math.ceil(10 - (curr-timestamp0))), (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)/2 - 100), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)/2 + 150)), cv2.FONT_HERSHEY_SIMPLEX, 10, (255, 255, 255), 5, cv2.LINE_AA)
             
