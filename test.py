@@ -61,10 +61,6 @@ def main():
         if event == 'Exit' or event == sg.WIN_CLOSED:
             break
 
-        if event == 'Front Facing Camera':
-            pushupView = 'Front View'
-        if event == 'Side Facing Camera':
-            pushupView = 'Side View'
 
         elif event == 'Front Facing Camera' or event == 'Side Facing Camera':
             window[f'-COL{layout}-'].update(visible=False)
@@ -79,6 +75,10 @@ def main():
             cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
             start_pushup = False
             start_countdown = False
+            if event == 'Front Facing Camera':
+                pushupView = 'Front View'
+            if event == 'Side Facing Camera':
+                pushupView = 'Side View'
 
         elif event == 'Start':
             window[f'-COL{layout}-'].update(visible=False)
