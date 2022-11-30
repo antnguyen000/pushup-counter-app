@@ -11,28 +11,27 @@ def main():
     sg.theme('DarkTeal')
 
     # define the window layout
-    layout1 = [[sg.Image(filename='large_logo.png')],
+    layout1 = [[sg.Column([
+                [sg.Image(filename='large_logo.png')]], justification='center')],
                 [sg.Column([
-                [sg.Text('By: The Probers'),
-                sg.Button('Start'), sg.Button('Exit')]], justification='center')]]
+                [sg.Button('Start'), sg.Button('Exit')]], justification='center')]]
 
-    layout2 = [[sg.Image(filename='logo.png')],
-                [sg.Column([[sg.Text('By: The Probers'),
-                sg.Button('Return'),
+    layout2 = [[sg.Column([
+                [sg.Image(filename='large_logo.png')]], justification='center')],
+                [sg.Column([[sg.Text('Select Camera View:'),
                 sg.Button('Front Facing Camera'),
-                sg.Button('Side Facing Camera')]], justification='center')]]
+                sg.Button('Side Facing Camera')],[
+                sg.Column([[sg.Button('Return')]], justification='center')]], justification='center')]]
 
-    layout3 = [[sg.Text('Pushup Analyzer'),
-                sg.Text('By: The Probers'),
-                sg.Button('Go Back')],
+    layout3 = [[sg.Button('Go Back')],
             [sg.Image(filename='', key='image')]]
     
             
-    layout = [[sg.Column(layout1, key='-COL1-', justification='center'), sg.Column(layout2, visible=False, key='-COL2-', justification='left'), sg.Column(layout3, visible=False, key='-COL3-')]]
+    layout = [[sg.Column(layout1, key='-COL1-'), sg.Column(layout2, visible=False, key='-COL2-'), sg.Column(layout3, visible=False, key='-COL3-')]]
 
     # create the window and show it without the plot
     window = sg.Window('OpenCV Pushup Tracker',
-                       layout, finalize=True)
+                       layout, finalize=True, element_justification='center')
 
     window.maximize()
 
