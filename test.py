@@ -194,6 +194,8 @@ def main():
                     window['image'].update(data=imgbytes)
                 except:
                     break
+        else:
+            pushup_count = 0
 
     window.close()
 
