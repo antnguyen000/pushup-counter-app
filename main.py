@@ -4,7 +4,6 @@ import numpy as np
 import mediapipe as mp
 import time, math
 import pushup_type
-from pathlib import Path
 import pyglet
 import pyttsx3
 
@@ -118,7 +117,7 @@ def main():
             if not start_pushup:
                 curr = time.time()
                 res = curr - timestamp0
-                if res > 1:
+                if res > 10:
                     start_pushup = True
 
                 # Reducing frame opacity    
