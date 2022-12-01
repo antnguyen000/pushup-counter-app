@@ -183,10 +183,21 @@ def main():
                         # SIDEVIEW pushup counter: Counts when elbow angle is below 90deg and above 160deg while back is maintained at above 150deg
                             if pushup_position and elbow_angle <= 90 and back_angle >= 150:
                                 pushup_position = 0
+                                engine.save_to_file('UP', 'test.wav')
+                                engine.runAndWait()
+                                filename = 'test.wav'
+                                music = pyglet.media.load(filename, streaming=False)
+                                music.play()
+                                music.delete()
                             elif not pushup_position and elbow_angle >= 160 and back_angle >= 150:
                                 pushup_position = 1
                                 pushup_count += 1
-                                # playsound(f'audio/{pushup_count}.wav', block=False) 
+                                engine.save_to_file(f'{pushup_count}, DOWN', 'test.wav')
+                                engine.runAndWait()
+                                filename = 'test.wav'
+                                music = pyglet.media.load(filename, streaming=False)
+                                music.play()
+                                music.delete()
                         
                         # Putting the pushup count on the image
                         cv2.putText(image, pushupView, (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) - 700), 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
