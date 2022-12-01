@@ -3,13 +3,16 @@ import cv2
 import numpy as np
 import mediapipe as mp
 import time, math
+import pushup_type
+from pathlib import Path
+import pyglet
 import pyttsx3
 
-import pushup_type
 
 def main():
 
     sg.theme('DarkTeal')
+    engine = pyttsx3.init()
 
     # define the window layout
     layout1 = [[sg.Column([
@@ -56,7 +59,6 @@ def main():
     start_countdown = False
 
     while True:
-        tts = pyttsx3.init()
         event, values = window.read(timeout=20)
         if event == 'Exit' or event == sg.WIN_CLOSED:
             break
@@ -75,6 +77,7 @@ def main():
             cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
             start_pushup = False
             start_countdown = False
+            pushup_count = 0
             if event == 'Front Facing Camera':
                 pushupView = 'Front View'
             if event == 'Side Facing Camera':
@@ -115,7 +118,7 @@ def main():
             if not start_pushup:
                 curr = time.time()
                 res = curr - timestamp0
-                if res > 10:
+                if res > 1:
                     start_pushup = True
 
                 # Reducing frame opacity    
@@ -157,11 +160,23 @@ def main():
                         # FRONTVIEW pushup counter: Counts when left & right elbow angle is below 90deg and above 170deg
                             if pushup_position and left_angle <= 90 and right_angle <= 90:
                                 pushup_position = 0
+                                engine.save_to_file('UP', 'test.wav')
+                                engine.runAndWait()
+                                filename = 'test.wav'
+                                music = pyglet.media.load(filename, streaming=False)
+                                music.play()
+                                music.delete()
+
+
                             elif not pushup_position and left_angle >= 170 and right_angle >= 170:
                                 pushup_position = 1
                                 pushup_count += 1
-                                tts.say(str(pushup_count))
-                                tts.runAndWait()
+                                engine.save_to_file(f'{pushup_count}, DOWN', 'test.wav')
+                                engine.runAndWait()
+                                filename = 'test.wav'
+                                music = pyglet.media.load(filename, streaming=False)
+                                music.play()
+                                music.delete()
 
                         if pushupView == 'Side View':
                             elbow_angle, back_angle, image = pushup_type.sideview_pushup(image, landmarks, mp_pose, cap)
@@ -170,9 +185,8 @@ def main():
                                 pushup_position = 0
                             elif not pushup_position and elbow_angle >= 160 and back_angle >= 150:
                                 pushup_position = 1
-                                pushup_count += 1 
-                                tts.say(str(pushup_count))
-                                tts.runAndWait()
+                                pushup_count += 1
+                                # playsound(f'audio/{pushup_count}.wav', block=False) 
                         
                         # Putting the pushup count on the image
                         cv2.putText(image, pushupView, (int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) - 700), 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2, cv2.LINE_AA)
